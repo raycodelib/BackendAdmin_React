@@ -1,20 +1,45 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Icon } from 'antd';
+import { Form, Input, Button, Icon, message } from 'antd';
 // import Icon from '@ant-design/icons';
 
 import './login.less';
-import logo from './images/logo.png';
+import logo from '../../assets/images/logo.png';
+import { reqLogin } from '../../api';
+import memoryUtils from '../../utils/memoryUtils';
+import storageUtils from '../../utils/storageUtils';
+import { Redirect } from 'react-router-dom';
+
+const Item = Form.Item;
 
 // login route component
 class Login extends Component {
     handleSubmit = (event) => {
         event.preventDefault();
-        this.props.form.validateFields((err, values) => {
+        this.props.form.validateFields(async (err, values) => {
             if (!err) {
-                console.log(
-                    'Verification succeed. Received values of form: ',
-                    values
-                );
+                const { username, password } = values;
+                // reqLogin(username, password)
+                //     .then((response) => {
+                //         console.log('reqLogin success:', response.data);
+                //     })
+                //     .catch((error) => {
+                //         console.log('reqLogin failed:', error);
+                //     });
+
+                // const response = await reqLogin(username, password);
+                // const result = response.data; // {status: 0, data: user}   {status: 1, msg: 'failed'}
+                const result = await reqLogin(username, password);
+                if (result.status === 0) {
+                    message.success('Login successfully');
+                    const user = result.data;
+                    memoryUtils.user = user;
+                    storageUtils.saveUser(user);
+                    this.props.history.replace('/');
+                } else {
+                    message.error('Invalid username or password');
+                }
+            } else {
+                console.log('verification failed!');
             }
         });
         // const form = this.props.form;
@@ -40,6 +65,10 @@ class Login extends Component {
     };
 
     render() {
+        const user = memoryUtils.user;
+        if (user && user._id) {
+            return <Redirect to='/' />;
+        }
         const form = this.props.form; // this form object provides form verification and collection function
         const { getFieldDecorator } = form;
 
@@ -52,7 +81,7 @@ class Login extends Component {
                 <section className='login-content'>
                     <h2>Login</h2>
                     <Form onSubmit={this.handleSubmit} className='login-form'>
-                        <Form.Item>
+                        <Item>
                             {getFieldDecorator('username', {
                                 rules: [
                                     {
@@ -76,6 +105,7 @@ class Login extends Component {
                                             'Your username should only contain underscore, letters, numbers.',
                                     },
                                 ],
+                                initialValue: 'admin',
                             })(
                                 <Input
                                     prefix={
@@ -87,7 +117,7 @@ class Login extends Component {
                                     placeholder='Username'
                                 />
                             )}
-                        </Form.Item>
+                        </Item>
                         <Form.Item>
                             {getFieldDecorator('password', {
                                 rules: [{ validator: this.validatePwd }],
@@ -142,7 +172,7 @@ class Login extends Component {
 //  create() is a advanced function as it returns a function
 //  wrap Form component will generate a new component: Form(Login)
 //    which passes a object attribute: form
-const WrapLogin = Form.create()(Login);
-export default WrapLogin;
 // 1. frontend form verification
 // 2. frontend form data collection
+const WrapLogin = Form.create()(Login);
+export default WrapLogin;
