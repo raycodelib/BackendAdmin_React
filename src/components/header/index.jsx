@@ -25,8 +25,7 @@ class Header extends Component {
     };
 
     getWeather = async () => {
-        const { dayPictureUrl, weather } = await reqWeather('深圳');
-        console.log(dayPictureUrl, weather);
+        const { dayPictureUrl, weather } = await reqWeather('北京');
         this.setState({ dayPictureUrl, weather });
     };
 
@@ -71,7 +70,8 @@ class Header extends Component {
     }
 
     render() {
-        const { currentTime, dayPictureUrl, weather } = this.state;
+        // const { currentTime, dayPictureUrl, weather } = this.state;
+        const { currentTime, dayPictureUrl } = this.state;
         const { username } = memoryUtils.user;
         const title = this.getTitle();
         return (
@@ -86,7 +86,8 @@ class Header extends Component {
                     <div className='header-bottom-right'>
                         <span>{currentTime}</span>
                         <img src={dayPictureUrl} alt='weather' />
-                        <span>{weather}</span>
+                        {/* <span>{weather}</span> */}
+                        <span>Sunny</span>
                     </div>
                 </div>
             </div>
