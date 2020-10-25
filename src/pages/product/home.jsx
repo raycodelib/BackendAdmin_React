@@ -2,42 +2,44 @@ import React, { Component } from "react";
 import { Card, Select, Input, Button, Icon, Table } from "antd";
 
 import LinkButton from "../../components/link-button";
-import { reqProducts } from "../../api";
+import { reqProducts, reqSearchProducts } from "../../api";
 import { PAGE_SIZE } from "../../utils/constants";
 
 const Option = Select.Option;
 
 export default class ProductHome extends Component {
   state = {
-    // products: [
-    //   {
-    //     status: 1,
-    //     imgs: [],
-    //     _id: "111",
-    //     name: "ThinkPad Y480",
-    //     desc: "X390 T490 Slim",
-    //     price: 1500,
-    //     pCategoryId: "aaa",
-    //     categoryId: "bbb",
-    //     detail: "",
-    //     __v: 0,
-    //   },
-    //   {
-    //     status: 1,
-    //     imgs: [],
-    //     _id: "222",
-    //     name: "Alienware S17",
-    //     desc: "RTX3080, Intel i9 9900",
-    //     price: 5000,
-    //     pCategoryId: "ccc",
-    //     categoryId: "ddd",
-    //     detail: "",
-    //     __v: 0,
-    //   },
-    // ],
+    products: [
+      {
+        status: 1,
+        imgs: [],
+        _id: "111",
+        name: "ThinkPad Y480",
+        desc: "X390 T490 Slim",
+        price: 1500,
+        pCategoryId: "aaa",
+        categoryId: "bbb",
+        detail: "",
+        __v: 0,
+      },
+      {
+        status: 1,
+        imgs: [],
+        _id: "222",
+        name: "Alienware S17",
+        desc: "RTX3080, Intel i9 9900",
+        price: 5000,
+        pCategoryId: "ccc",
+        categoryId: "ddd",
+        detail: "",
+        __v: 0,
+      },
+    ],
     total: 0,
-    products: [],
+    // products: [],
     loading: false,
+    searchName: "",
+    searchType: "productName",
   };
   initColumns = () => {
     this.columns = [
@@ -74,7 +76,13 @@ export default class ProductHome extends Component {
         render: (product) => {
           return (
             <span>
-              <LinkButton>Details</LinkButton>
+              <LinkButton
+                onClick={() =>
+                  this.props.history.push("/product/detail", { product })
+                }
+              >
+                Details
+              </LinkButton>
               <LinkButton>Modify</LinkButton>
             </span>
           );
@@ -85,13 +93,24 @@ export default class ProductHome extends Component {
 
   getProducts = async (pageNum) => {
     this.setState({ loading: true });
-    const result = await reqProducts(pageNum, PAGE_SIZE);
+    const { searchName, searchType } = this.state;
+    let result;
+    if (searchName) {
+      result = await reqSearchProducts({
+        pageNum,
+        pageSize: PAGE_SIZE,
+        searchName,
+        searchType,
+      });
+    } else {
+      result = await reqProducts(pageNum, PAGE_SIZE);
+    }
     this.setState({ loading: false });
 
-    if (result.status === 0) {
-      const { total, list } = result.data;
-      this.setState({ total, products: list });
-    }
+    // if (result.status === 0) {
+    // const { total, list } = result.data;
+    // this.setState({ total, products: list });
+    // }
   };
 
   componentWillMount() {
@@ -103,16 +122,29 @@ export default class ProductHome extends Component {
   }
 
   render() {
-    const { products, total, loading } = this.state;
+    const { products, total, loading, searchName, searchType } = this.state;
 
     const title = (
       <span>
-        <Select value="1" style={{ width: 150 }}>
-          <Option value="1">Sort by Name</Option>
-          <Option value="2">Sort by Description</Option>
+        <Select
+          value={searchType}
+          style={{ width: 150 }}
+          onChange={(value) => this.setState({ searchType: value })}
+        >
+          <Option value="productName">Search by Name</Option>
+          <Option value="productDesc">Search by Description</Option>
         </Select>
-        <Input placeholder="Keyword" style={{ width: 150, margin: "0 15px" }} />
-        <Button type="primary">APPLY</Button>
+        <Input
+          placeholder="Keyword"
+          style={{ width: 150, margin: "0 15px" }}
+          value={searchName}
+          onChange={(event) =>
+            this.setState({ searchName: event.target.value })
+          }
+        />
+        <Button type="primary" onClick={() => this.getProducts(1)}>
+          APPLY
+        </Button>
       </span>
     );
     const extra = (
@@ -135,7 +167,7 @@ export default class ProductHome extends Component {
             showQuickJumper: true,
             // onChange: (pageNum) => {
             //   this.getProducts(pageNum);
-            // },
+            // }, // same as below
             onChange: this.getProducts,
           }}
         />

@@ -29,9 +29,33 @@ export const reqAddCategory = (categoryName, parentId) =>
 export const reqUpdateCategory = ({ categoryId, categoryName }) =>
   ajax(BASE + "/manage/category/update", { categoryId, categoryName }, "POST");
 
+// get category for product
+export const reqProductCategory = (categoryId) =>
+  ajax(BASE + "/manage/category/info", { categoryId });
+
 // get products
 export const reqProducts = (pageNum, pageSize) =>
   ajax(BASE + "/manage/product/list", { pageNum, pageSize });
+
+// search product by productName/productType
+export const reqSearchProducts = ({
+  pageNum,
+  pageSize,
+  searchName,
+  searchType,
+}) =>
+  ajax(BASE + "/manage/product/search", {
+    pageNum,
+    pageSize,
+    [searchType]: searchName,
+  });
+// search product by productDesc
+// export const reqSearchProducts = ({ pageNum, pageSize, searchName }) =>
+//   ajax(BASE + "/manage/product/search", {
+//     pageNum,
+//     pageSize,
+//     productDesc: searchName,
+//   });
 
 // send jsonp to get weather information
 export const reqWeather = (location) => {
